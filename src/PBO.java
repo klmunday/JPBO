@@ -1,49 +1,43 @@
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
-import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Scanner;
 
 public class PBO {
 
     private String filename;
     private String path;
     private ArrayList<String> strings;
+    private ArrayList<PBOHeaderEntry> headers;
 
-    public PBO(String path, ArrayList<String> strings) {
+    public PBO(String path, ArrayList<String> strings, ArrayList<PBOHeaderEntry> headers) {
         this.filename = filename;
         this.path = path;
         this.strings = strings;
+        this.headers = headers;
     }
 
     public static PBO read(String filepath) {
         try {
-            if (validPBOFile(filepath)) {
-                FileInputStream pboFile = new FileInputStream(filepath);
-                pboFile.skip(21);  // Skip pbo header
+            FileInputStream pboFile = new FileInputStream(filepath);
+            PBOInputStream pboReader = new PBOInputStream(pboFile);
+            pboFile.skip(21);  // Skip product header
 
-                // Read strings
-                ArrayList<String> pboStrings = new ArrayList<>();
-                Scanner scanner = new Scanner(pboFile, StandardCharsets.UTF_8);
-                scanner.useDelimiter("\u0000");
-                String curString = scanner.next();
-                while (!curString.isEmpty()) {
-                    pboStrings.add(curString);
-                    System.out.println(curString);
-                    curString = scanner.next();
-                }
-                System.out.println(pboStrings.size());
+            // Read strings
+            System.out.println("Reading strings");
 
-                pboFile.close();
-                return new PBO(filepath, pboStrings);
-            } else {
-                return null;
+            ArrayList<String> pboStrings = new ArrayList<>();
+            String curString = pboReader.readString();
+
+            while (!curString.isEmpty()) {
+                pboStrings.add(curString);
+                curString = pboReader.readString();
             }
+
+            System.out.println("Read " + pboStrings.size() + " strings");
+
+            pboFile.close();
+            return new PBO(filepath, pboStrings, new ArrayList<>());
         }
         catch(Exception e) {
             e.printStackTrace();
@@ -69,6 +63,10 @@ public class PBO {
     }
 
     public static void main(String[] args) {
-        PBO pbo = PBO.read("test.pbo");
+        if (validPBOFile("test.pbo")) {
+            PBO pbo = PBO.read("test.pbo");
+        } else {
+            System.err.println("Please input a valid PBO file");
+        }
     }
 }

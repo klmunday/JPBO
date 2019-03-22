@@ -1,16 +1,14 @@
-import java.io.RandomAccessFile;
-
 public class PBOHeaderEntry {
 
-    private String filename;
+    private String headerName;
     private PackingMethod packingMethod;
     private int originalSize;
     private int reserved;
     private int timestamp;
     private int dataSize;
 
-    public PBOHeaderEntry(String filename, PackingMethod packingMethod, int originalSize, int reserved, int timestamp, int dataSize) {
-        this.filename = filename;
+    public PBOHeaderEntry(String headerName, PackingMethod packingMethod, int originalSize, int reserved, int timestamp, int dataSize) {
+        this.headerName = headerName;
         this.packingMethod = packingMethod;
         this.originalSize = originalSize;
         this.reserved = reserved;
@@ -18,16 +16,16 @@ public class PBOHeaderEntry {
         this.dataSize = dataSize;
     }
 
-    public static PBOHeaderEntry read(RandomAccessFile pboFile) {
+    public static PBOHeaderEntry read(PBOInputStream pboReader) {
         try {
-            String filename = pboFile.readUTF();
-            PackingMethod packingMethod = PackingMethod.fromValue(pboFile.readInt());
-            int originalSize = pboFile.readInt();
-            int reserved = pboFile.readInt();
-            int timestamp = pboFile.readInt();
-            int dataSize = pboFile.readInt();
-
-            return new PBOHeaderEntry(filename, packingMethod, originalSize, reserved, timestamp, dataSize);
+            String headerName = pboReader.readString();
+            PackingMethod packingMethod = pboReader.readPackingMethod();
+            int originalSize = pboReader.readInt();
+            int reserved = pboReader.readInt();
+            int timestamp = pboReader.readInt();
+            int dataSize = pboReader.readInt();
+            
+            return new PBOHeaderEntry(headerName, packingMethod, originalSize, reserved, timestamp, dataSize);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
