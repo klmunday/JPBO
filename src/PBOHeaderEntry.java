@@ -31,4 +31,8 @@ public class PBOHeaderEntry {
             return null;
         }
     }
+
+    public boolean isEmpty() {
+        return headerName.isEmpty() && originalSize.equals(0) && dataSize.equals(0);
+    }
 }

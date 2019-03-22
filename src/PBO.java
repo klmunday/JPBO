@@ -25,16 +25,26 @@ public class PBO {
 
             // Read strings
             System.out.println("Reading strings");
-
             ArrayList<String> pboStrings = new ArrayList<>();
             String curString = pboReader.readString();
-
             while (!curString.isEmpty()) {
                 pboStrings.add(curString);
                 curString = pboReader.readString();
             }
-
             System.out.println("Read " + pboStrings.size() + " strings");
+
+            // Read header entries
+            System.out.println("Reading headers");
+            ArrayList<PBOHeaderEntry> pboHeaders = new ArrayList<>;
+            PBOHeaderEntry header = PBOHeaderEntry.read(pboReader);
+            while (!header.isEmpty()) {
+                pboHeaders.add(header);
+                header = PBOHeaderEntry.read(pboReader);
+            }
+            System.out.println("Read " + pboHeaders.size() + " headers");
+
+            int dataBlockOffset = pboFile.getChannel().getPosition();
+            System.out.println("Data block reached at offset: " + dataBlockOffset);
 
             pboFile.close();
             return new PBO(filepath, pboStrings, new ArrayList<>());
