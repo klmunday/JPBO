@@ -1,4 +1,3 @@
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
@@ -9,10 +8,10 @@ public class PBO {
     private String filename;
     private String path;
     private ArrayList<String> strings;
-    private ArrayList<PBOHeaderEntry> headers;
-    private int dataBlockOffset;
+    private ArrayList<Header> headers;
+    private long dataBlockOffset;
 
-    public PBO(String path, ArrayList<String> strings, ArrayList<PBOHeaderEntry> headers, int dataBlockOffset) {
+    public PBO(String path, ArrayList<String> strings, ArrayList<Header> headers, long dataBlockOffset) {
         this.filename = filename;
         this.path = path;
         this.strings = strings;
@@ -21,39 +20,35 @@ public class PBO {
     }
 
     public static PBO read(String filepath) throws IOException {
-        FileInputStream pboFile = new FileInputStream(filepath);
-        PBOInputStream pboReader = new PBOInputStream(pboFile);
-        pboFile.skip(21);  // Skip product header
+        PBOInputStream pboReader = new PBOInputStream(filepath);
 
         // Read strings
         System.out.println("Reading strings");
         ArrayList<String> pboStrings = new ArrayList<>();
-        String curString = pboReader.readString();
-        while (!curString.isEmpty()) {
-            pboStrings.add(curString);
-            System.out.println("\tString: \"" + curString + "\"");
-            curString = pboReader.readString();
+
+        for (String str = pboReader.readString(); !str.isEmpty(); str = pboReader.readString()) {
+            pboStrings.add(str);
+            System.out.println("\tString: \"" + str + "\"");
         }
-        System.out.println("Read " + pboStrings.size() + " strings\n");
+        System.out.println("\nRead " + pboStrings.size() + " strings\n");
 
          // Read header entries
         System.out.println("Reading headers");
-        ArrayList<PBOHeaderEntry> pboHeaders = new ArrayList<>();
-        int dataOffset = 0;
-        PBOHeaderEntry header = PBOHeaderEntry.read(pboReader, dataOffset);
-        while (!header.isEmpty()) {
+        ArrayList<Header> pboHeaders = new ArrayList<>();
+        long offset = 0;
+
+        for (Header header = Header.read(pboReader, offset); !header.isEmpty(); header = Header.read(pboReader, offset)) {
             pboHeaders.add(header);
+            offset += header.getDataSize();
             System.out.println(header.toString());
-            dataOffset += header.getDataSize();
-            header = PBOHeaderEntry.read(pboReader, dataOffset);
         }
         System.out.println("Read " + pboHeaders.size() + " headers\n");
 
-        int dataBlockOffset = (int) pboFile.getChannel().position();
+        long dataBlockOffset = pboReader.getChannel().position();
         System.out.println("Data block reached at offset: " + dataBlockOffset);
 
-        pboFile.close();
-        return new PBO(filepath, pboStrings, new ArrayList<>(), dataBlockOffset);
+        pboReader.close();
+        return new PBO(filepath, pboStrings, pboHeaders, dataBlockOffset);
     }
 
     public static Boolean validPBOFile(String filepath) throws IOException {

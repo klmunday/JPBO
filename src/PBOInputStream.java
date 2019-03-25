@@ -2,15 +2,16 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class PBOInputStream extends DataInputStream {
+public class PBOInputStream extends FileInputStream {
 
-    public PBOInputStream(InputStream in) {
-        super(in);
+    public PBOInputStream(String name) throws IOException {
+        super(name);
+        this.skip(21);  // Skip PBO file header
     }
 
     public String readString() throws IOException {
         ByteArrayOutputStream byteString = new ByteArrayOutputStream();
-        for (byte index = this.readByte(); index != 0; index = this.readByte()) {
+        for (int index = this.read(); index != 0; index = this.read()) {
             byteString.write(index);
         }
         return byteString.toString();
