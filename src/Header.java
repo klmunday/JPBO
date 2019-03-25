@@ -2,7 +2,7 @@ import java.io.IOException;
 
 public class Header {
 
-    private String headerName;
+    private String path;
     private PackingMethod packingMethod;
     private int originalSize;
     private int reserved;
@@ -10,9 +10,9 @@ public class Header {
     private long dataSize;
     private long dataOffset;
 
-    public Header(String headerName, PackingMethod packingMethod, int originalSize,
+    public Header(String path, PackingMethod packingMethod, int originalSize,
                   int reserved, int timestamp, long dataSize, long dataOffset) {
-        this.headerName = headerName;
+        this.path = path;
         this.packingMethod = packingMethod;
         this.originalSize = originalSize;
         this.reserved = reserved;
@@ -34,7 +34,7 @@ public class Header {
 
     @Override
     public String toString() {
-        return "Header(" + this.headerName + ")" +
+        return "Header(" + this.path + ")" +
                 "\n\tMethod: " + this.packingMethod +
                 "\n\tOriginal Size: " + this.originalSize +
                 "\n\tReserved: " + this.reserved +
@@ -44,11 +44,11 @@ public class Header {
     }
 
     public boolean isEmpty() {
-        return headerName.isEmpty();
+        return path.isEmpty();
     }
 
-    public String getHeaderName() {
-        return this.headerName;
+    public String getPath() {
+        return this.path;
     }
     public long getDataSize() {
         return this.dataSize;
