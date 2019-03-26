@@ -6,7 +6,11 @@ public class PBOInputStream extends FileInputStream {
 
     public PBOInputStream(String name) throws IOException {
         super(name);
-        this.skip(21);  // Skip PBO file header
+    }
+
+    public PBOInputStream(String name, long dataOffset) throws IOException {
+        super(name);
+        this.skip(dataOffset);
     }
 
     public String readString() throws IOException {

@@ -56,4 +56,7 @@ public class Header {
     public long getDataOffset() {
         return this.dataOffset;
     }
+    public PackingMethod getPackingMethod() {
+        return this.packingMethod;
+    }
 }

@@ -1,8 +1,6 @@
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.io.File;
 
 public class PBO {
 
@@ -25,14 +23,14 @@ public class PBO {
         ArrayList<Header> pboHeaders;
         long dataBlockOffset;
         
-        try (PBOInputStream pboReader = new PBOInputStream(filepath)) {
+        try (PBOInputStream pboReader = new PBOInputStream(filepath, 21)) {
             // Read strings
             System.out.println("Reading strings");
             pboStrings = new ArrayList<>();
             for (String str = pboReader.readString(); !str.isEmpty(); str = pboReader.readString()) {
                 pboStrings.add(str);
-                System.out.println("\tString: \"" + str + "\"");
-            }   System.out.println("\nRead " + pboStrings.size() + " strings\n");
+            }
+            System.out.println("Read " + pboStrings.size() + " strings");
             
             // Read header entries
             System.out.println("Reading headers");
@@ -41,19 +39,13 @@ public class PBO {
             for (Header header = Header.read(pboReader, offset); !header.isEmpty(); header = Header.read(pboReader, offset)) {
                 pboHeaders.add(header);
                 offset += header.getDataSize();
-                System.out.println(header.toString());
-            }   System.out.println("Read " + pboHeaders.size() + " headers");
+            }
+            System.out.println("Read " + pboHeaders.size() + " headers");
             
             dataBlockOffset = pboReader.getChannel().position();
             System.out.println("Data block reached at offset: " + dataBlockOffset + "\n");
         }
         return new PBO(filepath, pboStrings, pboHeaders, dataBlockOffset);
-    }
-    
-    public void unpackFiles() throws IOException {
-        for (Header header : this.headers) {
-            System.out.println("Unpacking " + header.getPath());
-        }
     }
 
     public static Boolean validPBOFile(String filepath) throws IOException {
@@ -66,5 +58,15 @@ public class PBO {
 
         boolean fileIsPBO = Arrays.equals(magic, new byte[]{115, 114, 101, 86});  // check magic number
         return fileIsPBO && filepath.endsWith(".pbo");
+    }
+
+    public String getPath() {
+        return this.path;
+    }
+    public ArrayList<Header> getHeaders() {
+        return this.headers;
+    }
+    public long getDataBlockOffset() {
+        return this.dataBlockOffset;
     }
 }
