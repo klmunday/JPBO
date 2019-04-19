@@ -22,7 +22,7 @@ public class UnpackerThread extends Thread {
         pboDirectory.mkdir();
 
         for (Header header : this.headers) {
-            System.out.println("Unpacking " + header.getPath());
+            //System.out.println("Unpacking " + header.getPath());
             try (PBOInputStream pboReader = new PBOInputStream(this.path)) {
                 byte[] dataBuffer = new byte[(int) header.getDataSize()];
                 pboReader.skip(this.dataBlockOffset + header.getDataOffset());

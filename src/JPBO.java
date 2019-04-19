@@ -1,6 +1,6 @@
 import java.io.*;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 
 public class JPBO {
     
@@ -9,31 +9,29 @@ public class JPBO {
             long startTime = System.currentTimeMillis();
             PBO pbo = PBO.read("test.pbo");
 
-            int threadCount = 4;
+            int threadCount = 8;
+            if (threadCount > pbo.getHeaders().size()) {
+                System.out.println("Thread count greater than header count. Defaulting to header count");
+                threadCount = pbo.getHeaders().size();
+            }
 
-            if (threadCount > pbo.getHeaders().size())
-                throw new IllegalArgumentException("Thread count cannot be larger than PBO header count");
+            ArrayList<UnpackerThread> threads = new ArrayList<>();
+            Collections.sort(pbo.getHeaders());
+            double chunkSize = (double) pbo.getHeaders().size() / threadCount;
 
-            UnpackerThread[] threads = new UnpackerThread[threadCount];
-            for (int i = 0; i < threadCount; i++) {
-                ArrayList<Header> pboHeaders = pbo.getHeaders();
-                double div = pboHeaders.size() / (double) threadCount;
-                int headerChunkSize = (int) Math.ceil(div);
+            for (int i = 0, processed = 0; i < threadCount; i++, processed += chunkSize) {
+                ArrayList<Header> headerSubList = new ArrayList<>();
 
-                List<Header> headerChunk;
-                if ((i == threadCount - 1) && (div % 1 != 0))
-                    headerChunk = pboHeaders.subList(i * headerChunkSize, ((i + 1) * headerChunkSize) - i);
-                else
-                    headerChunk = pboHeaders.subList(i * headerChunkSize, (i + 1) * headerChunkSize);
+                for (int j = i; j < pbo.getHeaders().size(); j += threadCount)
+                    headerSubList.add(pbo.getHeaders().get(j));
 
-                UnpackerThread thread = new UnpackerThread(pbo.getPath(), new ArrayList<>(headerChunk), pbo.getDataBlockOffset());
-                threads[i] = thread;
+                UnpackerThread thread = new UnpackerThread(pbo.getPath(), headerSubList, pbo.getDataBlockOffset());
+                threads.add(thread);
                 thread.start();
             }
 
-            for (UnpackerThread thread : threads) {
+            for (UnpackerThread thread : threads)
                 thread.join();
-            }
 
             long endTime = System.currentTimeMillis();
             System.out.println("Completed in: " + (float)(endTime - startTime) / 1000 + " seconds" );

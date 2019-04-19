@@ -1,6 +1,7 @@
 import java.io.IOException;
+import java.util.Comparator;
 
-public class Header {
+public class Header implements Comparable<Header> {
 
     private String path;
     private PackingMethod packingMethod;
@@ -41,6 +42,11 @@ public class Header {
                 "\n\tTimestamp: " + this.timestamp +
                 "\n\tData Size: " + this.dataSize +
                 "\n\tData Offset: " + this.dataOffset + "\n";
+    }
+
+    @Override
+    public int compareTo(Header other) {
+        return Long.compare(this.dataSize, other.dataSize);
     }
 
     public boolean isEmpty() {
