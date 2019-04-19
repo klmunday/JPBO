@@ -10,22 +10,23 @@ public class JPBO {
             PBO pbo = PBO.read("test.pbo");
 
             int threadCount = 8;
-            if (threadCount > pbo.getHeaders().size()) {
+            int pboHeaderCount = pbo.getHeaders().size();
+
+            if (threadCount > pboHeaderCount) {
                 System.out.println("Thread count greater than header count. Defaulting to header count");
                 threadCount = pbo.getHeaders().size();
             }
 
             ArrayList<UnpackerThread> threads = new ArrayList<>();
-            Collections.sort(pbo.getHeaders());
-            double chunkSize = (double) pbo.getHeaders().size() / threadCount;
+            Collections.sort(pbo.getHeaders());  // Sort Headers by DataSize for load balancing
 
-            for (int i = 0, processed = 0; i < threadCount; i++, processed += chunkSize) {
-                ArrayList<Header> headerSubList = new ArrayList<>();
+            for (int i = 0; i < threadCount; i++) {
+                ArrayList<Header> threadHeaders = new ArrayList<>();
 
-                for (int j = i; j < pbo.getHeaders().size(); j += threadCount)
-                    headerSubList.add(pbo.getHeaders().get(j));
+                for (int j = i; j < pboHeaderCount; j += threadCount)
+                    threadHeaders.add(pbo.getHeaders().get(j));
 
-                UnpackerThread thread = new UnpackerThread(pbo.getPath(), headerSubList, pbo.getDataBlockOffset());
+                UnpackerThread thread = new UnpackerThread(pbo.getPath(), threadHeaders, pbo.getDataBlockOffset());
                 threads.add(thread);
                 thread.start();
             }

@@ -13,7 +13,7 @@ public class UnpackerThread extends Thread {
         this.path = path;
         this.headers = headers;
         this.dataBlockOffset = dataBlockOffset;
-        System.out.println("Thread created with " + headers.size() + " headers");
+        System.out.println("Thread created with " + headers.size() + " headers to process");
     }
 
     @Override
@@ -22,7 +22,7 @@ public class UnpackerThread extends Thread {
         pboDirectory.mkdir();
 
         for (Header header : this.headers) {
-            //System.out.println("Unpacking " + header.getPath());
+            System.out.println("Unpacking " + header.getPath());
             try (PBOInputStream pboReader = new PBOInputStream(this.path)) {
                 byte[] dataBuffer = new byte[(int) header.getDataSize()];
                 pboReader.skip(this.dataBlockOffset + header.getDataOffset());
@@ -30,7 +30,7 @@ public class UnpackerThread extends Thread {
 
                 if (header.getPackingMethod().equals(PackingMethod.COMPRESSED)) {
                     // TODO: add LZSS decompression
-                    System.out.println(header.getPath() + " has data that needs decompressing");
+                    System.out.println(header.getPath() + " skipped - LZSS decompression not yet supported");
                 }
 
                 File outFile = new File(pboDirectory + "\\" + header.getPath());
