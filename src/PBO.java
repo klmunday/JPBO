@@ -1,6 +1,7 @@
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 public class PBO {
 
@@ -18,34 +19,65 @@ public class PBO {
         this.dataBlockOffset = dataBlockOffset;
     }
 
+    @Override
+    public String toString() {
+        return "PBO(" + this.filename + ")"
+                + "\nPath: " + this.path
+                + "\nStrings: " + this.strings.size()
+                + "\nHeaders: " + this.headers.size()
+                + "\n";
+    }
+
     public static PBO read(String filepath) throws IOException {
-        ArrayList<String> pboStrings;
-        ArrayList<Header> pboHeaders;
-        long dataBlockOffset;
-        
         try (PBOInputStream pboReader = new PBOInputStream(filepath, 21)) {
             // Read strings
-            System.out.println("Reading strings");
-            pboStrings = new ArrayList<>();
-            for (String str = pboReader.readString(); !str.isEmpty(); str = pboReader.readString()) {
+            ArrayList<String> pboStrings = new ArrayList<>();
+            for (String str = pboReader.readString(); !str.isEmpty(); str = pboReader.readString())
                 pboStrings.add(str);
-            }
-            System.out.println("Read " + pboStrings.size() + " strings");
-            
-            // Read header entries
-            System.out.println("Reading headers");
-            pboHeaders = new ArrayList<>();
+
+            // Read headers
+            ArrayList<Header> pboHeaders = new ArrayList<>();
             long offset = 0;
             for (Header header = Header.read(pboReader, offset); !header.isEmpty(); header = Header.read(pboReader, offset)) {
                 pboHeaders.add(header);
                 offset += header.getDataSize();
             }
-            System.out.println("Read " + pboHeaders.size() + " headers");
-            
-            dataBlockOffset = pboReader.getChannel().position();
-            System.out.println("Data block reached at offset: " + dataBlockOffset + "\n");
+
+            long dataBlockOffset = pboReader.getChannel().position();
+            return new PBO(filepath, pboStrings, pboHeaders, dataBlockOffset);
         }
-        return new PBO(filepath, pboStrings, pboHeaders, dataBlockOffset);
+
+    }
+
+    public void unpack(int threadCount) throws InterruptedException {
+        if (threadCount > this.headers.size()) {
+            System.err.println("Thread count greater than header count. Defaulting to header count");
+            threadCount = this.headers.size();
+        } else if (threadCount < 1) {
+            System.err.println("Thread count needs to be greater than 0. Defaulting to 1");
+            threadCount = 1;
+        }
+
+        // Create copy of headers and sort them by size for load balancing between threads
+        ArrayList<Header> headersCopy = new ArrayList<>(this.headers.size());
+        headersCopy.addAll(this.headers);
+        Collections.sort(headersCopy);
+
+        ArrayList<UnpackerThread> threads = new ArrayList<>();
+
+        for (int i = 0; i < threadCount; i++) {
+            ArrayList<Header> threadHeaders = new ArrayList<>();
+
+            for (int j = i; j < this.headers.size(); j += threadCount)
+                threadHeaders.add(headersCopy.get(j));
+
+            UnpackerThread thread = new UnpackerThread(this.path, threadHeaders, this.dataBlockOffset);
+            threads.add(thread);
+            thread.start();
+        }
+
+        for (UnpackerThread thread : threads)
+            thread.join();
     }
 
     public static Boolean validPBOFile(String filepath) throws IOException {

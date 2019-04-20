@@ -4,12 +4,12 @@ import java.nio.ByteOrder;
 
 public class PBOInputStream extends FileInputStream {
 
-    public PBOInputStream(String name) throws IOException {
-        super(name);
+    public PBOInputStream(String filepath) throws IOException {
+        super(filepath);
     }
 
-    public PBOInputStream(String name, long dataOffset) throws IOException {
-        super(name);
+    public PBOInputStream(String filepath, long dataOffset) throws IOException {
+        super(filepath);
         this.skip(dataOffset);
     }
 

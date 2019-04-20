@@ -1,5 +1,4 @@
 import java.io.IOException;
-import java.util.Comparator;
 
 public class Header implements Comparable<Header> {
 
@@ -35,13 +34,14 @@ public class Header implements Comparable<Header> {
 
     @Override
     public String toString() {
-        return "Header(" + this.path + ")" +
-                "\n\tMethod: " + this.packingMethod +
-                "\n\tOriginal Size: " + this.originalSize +
-                "\n\tReserved: " + this.reserved +
-                "\n\tTimestamp: " + this.timestamp +
-                "\n\tData Size: " + this.dataSize +
-                "\n\tData Offset: " + this.dataOffset + "\n";
+        return "Header(" + this.path + ")"
+                + "\n\tMethod: " + this.packingMethod
+                + "\n\tOriginal Size: " + this.originalSize
+                + "\n\tReserved: " + this.reserved
+                + "\n\tTimestamp: " + this.timestamp
+                + "\n\tData Size: " + this.dataSize
+                + "\n\tData Offset: " + this.dataOffset
+                + "\n";
     }
 
     @Override
