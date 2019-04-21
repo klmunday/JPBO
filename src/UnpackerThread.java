@@ -6,19 +6,20 @@ import java.util.ArrayList;
 public class UnpackerThread extends Thread {
 
     private String path;
+    private String outputDir;
     private ArrayList<Header> headers;
     private long dataBlockOffset;
 
-    public UnpackerThread(String path, ArrayList<Header> headers, long dataBlockOffset) {
+    public UnpackerThread(String path, String outputDir, ArrayList<Header> headers, long dataBlockOffset) {
         this.path = path;
+        this.outputDir = outputDir;
         this.headers = headers;
         this.dataBlockOffset = dataBlockOffset;
     }
 
     @Override
     public void run() {
-        File pboDirectory = new File(this.path.substring(0, this.path.length() - 4));
-        pboDirectory.mkdir();
+        File pboDirectory = new File(this.outputDir);
 
         for (Header header : this.headers) {
             System.out.println("Unpacking " + header.getPath());
@@ -33,7 +34,7 @@ public class UnpackerThread extends Thread {
                 if (header.getPackingMethod().equals(PackingMethod.COMPRESSED))
                     System.out.println(header.getPath() + " skipped - LZSS decompression not yet supported");
 
-                File outFile = new File(pboDirectory + "\\" + header.getPath());
+                File outFile = new File(pboDirectory + File.separator + header.getPath());
                 outFile.getParentFile().mkdirs();
 
                 FileOutputStream fileOut = new FileOutputStream(outFile);

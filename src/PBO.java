@@ -49,7 +49,7 @@ public class PBO {
 
     }
 
-    public void unpack(int threadCount) throws InterruptedException {
+    public void unpack(String outputDir, int threadCount) throws InterruptedException {
         if (threadCount > this.headers.size()) {
             System.err.println("Thread count greater than header count. Defaulting to header count");
             threadCount = this.headers.size();
@@ -71,7 +71,7 @@ public class PBO {
             for (int j = i; j < this.headers.size(); j += threadCount)
                 threadHeaders.add(headersCopy.get(j));
 
-            UnpackerThread thread = new UnpackerThread(this.path, threadHeaders, this.dataBlockOffset);
+            UnpackerThread thread = new UnpackerThread(this.path, outputDir, threadHeaders, this.dataBlockOffset);
             threads.add(thread);
             thread.start();
         }
@@ -92,9 +92,8 @@ public class PBO {
         return fileIsPBO && filepath.endsWith(".pbo");
     }
 
-    public String getPath() {
-        return this.path;
-    }
+    public String getPath() {return this.path;}
+    public String getFilename() {return this.path.substring(0, this.path.lastIndexOf("."));}
     public ArrayList<Header> getHeaders() {
         return this.headers;
     }
