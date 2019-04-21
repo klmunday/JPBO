@@ -34,7 +34,8 @@ public class UnpackerThread extends Thread {
                 if (header.getPackingMethod().equals(PackingMethod.COMPRESSED))
                     System.out.println(header.getPath() + " skipped - LZSS decompression not yet supported");
 
-                File outFile = new File(pboDirectory + File.separator + header.getPath());
+                String filename = pboDirectory + File.separator + header.getPath().replace("\\", File.separator);
+                File outFile = new File(filename);
                 outFile.getParentFile().mkdirs();
 
                 FileOutputStream fileOut = new FileOutputStream(outFile);
