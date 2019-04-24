@@ -49,6 +49,12 @@ public class PBO {
 
     }
 
+    public void unpack(String outputDir) throws InterruptedException {
+        UnpackerThread thread = new UnpackerThread(this.path, outputDir, this.headers, this.dataBlockOffset);
+        thread.start();
+        thread.join();
+    }
+
     public void unpack(String outputDir, int threadCount) throws InterruptedException {
         if (threadCount > this.headers.size()) {
             System.err.println("Thread count greater than header count. Defaulting to header count");

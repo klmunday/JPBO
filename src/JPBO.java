@@ -7,8 +7,8 @@ public class JPBO {
 
     private static final double VERSION = 0.1;
 
-    private static final String DOC = "JPBO Version " + VERSION + ".\n"
-            + "\n"
+    private static final String DOC = "JPBO Version " + VERSION
+            + "\n\n"
             + "Usage:\n"
             + "  JPBO <filepath> [--output=<outDir>] [--threads=<n>]\n"
             + "  JPBO (-h | --help)\n"
@@ -25,11 +25,11 @@ public class JPBO {
         final Map<String, Object> opts = new Docopt(DOC)
                 .withVersion("JPBO " + VERSION)
                 .parse(args);
-        System.out.println(opts);
 
         String filepath = opts.get("<filepath>").toString();
         if (PBO.validPBOFile(filepath)) {
             long startTime = System.currentTimeMillis();
+
             PBO pbo = PBO.read(filepath);
             System.out.println(pbo);
 
@@ -37,7 +37,10 @@ public class JPBO {
             Object outputArg = opts.get("--output");
             String outputDir = outputArg == null ? pbo.getFilename() : outputArg.toString() + File.separator + pbo.getFilename();
 
-            pbo.unpack(outputDir, threadCount);
+            if (threadCount > 1)
+                pbo.unpack(outputDir, threadCount);
+            else
+                pbo.unpack(outputDir);
 
             long endTime = System.currentTimeMillis();
             System.out.println("\nPBO file read and unpacked in: " + (float) (endTime - startTime) / 1000 + " seconds" );
