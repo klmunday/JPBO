@@ -1,3 +1,5 @@
+package com.jpbo;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -7,10 +9,10 @@ public class UnpackerThread extends Thread {
 
     private String path;
     private String outputDir;
-    private ArrayList<Header> headers;
+    private ArrayList<PBOHeader> headers;
     private long dataBlockOffset;
 
-    public UnpackerThread(String path, String outputDir, ArrayList<Header> headers, long dataBlockOffset) {
+    public UnpackerThread(String path, String outputDir, ArrayList<PBOHeader> headers, long dataBlockOffset) {
         this.path = path;
         this.outputDir = outputDir;
         this.headers = headers;
@@ -21,7 +23,7 @@ public class UnpackerThread extends Thread {
     public void run() {
         File pboDirectory = new File(this.outputDir);
 
-        for (Header header : this.headers) {
+        for (PBOHeader header : this.headers) {
             System.out.println("Unpacking " + header.getPath());
 
             try (PBOInputStream pboReader = new PBOInputStream(this.path)) {
@@ -30,17 +32,16 @@ public class UnpackerThread extends Thread {
                 pboReader.skip(this.dataBlockOffset + header.getDataOffset());
                 pboReader.read(dataBuffer, 0, (int) header.getDataSize());
 
-                // TODO: add LZSS decompression
                 if (header.getPackingMethod().equals(PackingMethod.COMPRESSED))
-                    System.out.println(header.getPath() + " skipped - LZSS decompression not yet supported");
+                    dataBuffer = PBO.decompressEntry(dataBuffer, header);
 
                 String filename = pboDirectory + File.separator + header.getPath().replace("\\", File.separator);
                 File outFile = new File(filename);
                 outFile.getParentFile().mkdirs();
 
-                FileOutputStream fileOut = new FileOutputStream(outFile);
-                fileOut.write(dataBuffer);
-                fileOut.close();
+                try (FileOutputStream fileOut = new FileOutputStream(outFile)) {
+                    fileOut.write(dataBuffer);
+                }
             }
             catch (IOException e) {
                 e.printStackTrace();

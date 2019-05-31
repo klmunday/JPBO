@@ -1,3 +1,5 @@
+package com.jpbo;
+
 import java.io.*;
 import java.util.Map;
 
@@ -21,7 +23,7 @@ public class JPBO {
             + "  -v --version       Show version.\n"
             + "\n";
     
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws Exception {
         final Map<String, Object> opts = new Docopt(DOC)
                 .withVersion("JPBO " + VERSION)
                 .parse(args);
@@ -41,6 +43,9 @@ public class JPBO {
                 pbo.unpack(outputDir, threadCount);
             else
                 pbo.unpack(outputDir);
+
+            //pbo.backup();
+            //pbo.save();
 
             long endTime = System.currentTimeMillis();
             System.out.println("\nPBO file read and unpacked in: " + (float) (endTime - startTime) / 1000 + " seconds" );

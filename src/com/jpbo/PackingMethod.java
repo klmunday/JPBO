@@ -1,3 +1,5 @@
+package com.jpbo;
+
 public enum PackingMethod {
     UNCOMPRESSED(0),
     COMPRESSED(1131442803),

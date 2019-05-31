@@ -1,0 +1,74 @@
+package com.jpbo;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
+public class PBOAccessFile extends RandomAccessFile {
+
+    private PBO pbo;
+    private MessageDigest checkSum;
+
+    public PBOAccessFile(PBO pbo, String path) throws FileNotFoundException, NoSuchAlgorithmException {
+        super(path, "rw");
+        this.pbo = pbo;
+        this.checkSum = MessageDigest.getInstance("SHA-1");
+    }
+
+    public PBOAccessFile(PBO pbo) throws FileNotFoundException, NoSuchAlgorithmException {
+        this(pbo, pbo.getPath());
+    }
+
+    @Override
+    public void write(int b) throws IOException {
+        this.write(new byte[]{(byte) b});
+    }
+
+    @Override
+    public void write(byte[] b) throws IOException {
+        this.write(b, 0, b.length);
+    }
+
+    @Override
+    public void write(byte[] b, int off, int len) throws IOException {
+        super.write(b, off, len);
+        this.checkSum.update(b);
+    }
+
+    public long getPosition() throws IOException {
+        return this.getChannel().position();
+    }
+
+    public void writeChecksum() throws IOException {
+        super.write(0);
+        super.write(this.checkSum.digest());
+    }
+
+    public void readAndWrite(long readPos, int readLen) throws IOException {
+        byte[] data = new byte[readLen];
+        long writePos = this.getPosition();
+        this.seek(readPos);
+        this.read(data);
+        this.seek(writePos);
+        this.write(data);
+    }
+
+    public void savePBO() throws IOException {
+        this.write(pbo.getProductHeader().toBytes());
+
+        for (PBOHeader header : pbo.getHeaders())
+            this.write(header.toBytes());
+
+        this.write(PBOHeader.emptyHeader());
+
+        for (PBOHeader header : pbo.getHeaders()) {
+            long offset = pbo.getDataBlockOffset() + header.getDataOffset();
+            this.readAndWrite(offset, (int) header.getDataSize());
+        }
+
+        this.writeChecksum();
+        this.close();
+    }
+}
