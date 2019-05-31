@@ -1,0 +1,32 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.jpbo</groupId>
+    <artifactId>jpbo</artifactId>
+    <packaging>jar</packaging>
+    <version>0.1</version>
+    <name>JPBO</name>
+    <url>https://github.com/klmunday/JPBO</url>
+    <inceptionYear>2019</inceptionYear>
+
+    <properties>
+        <src.dir>src</src.dir>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.10</maven.compiler.source>
+        <maven.compiler.target>1.10</maven.compiler.target>
+    </properties>
+
+    <build>
+        <sourceDirectory>${src.dir}</sourceDirectory>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.docopt</groupId>
+            <artifactId>docopt</artifactId>
+        </dependency>
+    </dependencies>
+</project>

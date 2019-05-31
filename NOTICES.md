@@ -1,4 +1,9 @@
+# Third Party Software Notices
+JPBO uses software provided by third parties. The following copyright statements and licenses apply to various components that are distributed within JPBO.
+
+## [Docopt.java](https://github.com/docopt/docopt.java) (MIT License)
 Copyright (c) 2012 Vladimir Keleshev, <vladimir@keleshev.com>
+
 Copyright (c) 2014 Damien Giese, <damien.giese@gmail.com>
 
 Permission is hereby granted, free of charge, to any person
@@ -22,3 +27,4 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+

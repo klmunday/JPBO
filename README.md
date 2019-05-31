@@ -1,5 +1,7 @@
 # JPBO
-A multithreaded commandline PBO unpacker written for university coursework
+A multithreaded commandline PBO tool.
 
 ### Third party modules used:
-Docopt Java - [License](https://github.com/docopt/docopt.java/blob/master/LICENSE)
+Check NOTICED.md for a full list including individual licenses.
+
+[Docopt.java](https://github.com/docopt/docopt.java/)
