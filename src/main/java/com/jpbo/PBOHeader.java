@@ -47,8 +47,6 @@ public class PBOHeader implements Comparable<PBOHeader> {
                 + "\n\tReserved: " + this.reserved
                 + "\n\tTimestamp: " + this.timestamp
                 + "\n\tData Size: " + this.dataSize
-                + "\n\tData Offset: " + this.dataOffset
-                + "\n\tPBOHeader Offset: " + this.headerOffset
                 + "\n";
     }
 

@@ -37,6 +37,17 @@ public class PBOAccessFile extends RandomAccessFile {
         this.checkSum.update(b);
     }
 
+    public void seekAndUpdateChecksum(long pos) throws IOException {
+        if (pos <= this.getPosition()) {
+            System.err.println("seekAndUpdateChecksum called with lower value than current position.");
+            this.seek(pos);
+        } else {
+            byte[] data = new byte[(int) (pos - this.getPosition())];
+            this.read(data);
+            this.checkSum.update(data);
+        }
+    }
+
     public long getPosition() throws IOException {
         return this.getChannel().position();
     }
@@ -46,13 +57,30 @@ public class PBOAccessFile extends RandomAccessFile {
         super.write(this.checkSum.digest());
     }
 
-    public void readAndWrite(long readPos, int readLen) throws IOException {
-        byte[] data = new byte[readLen];
+    public void readAndWrite(long readPos, long readLen) throws IOException {
+        byte[] data = new byte[(int) readLen];
         long writePos = this.getPosition();
         this.seek(readPos);
         this.read(data);
         this.seek(writePos);
         this.write(data);
+    }
+
+    // TODO: incorrect checksum being calcualted, works fine when saved but needs to alter correctly here
+    public void deleteEntry(PBOHeader header) throws IOException {
+        this.seekAndUpdateChecksum(header.getHeaderOffset());
+
+        long readFromPos = this.getPosition() + header.length();
+        this.readAndWrite(readFromPos, pbo.getDataBlockOffset() + header.getDataOffset() - readFromPos);
+
+        readFromPos = this.getPosition() + header.getDataSize() + header.length();
+        // skip data block checksum if header is compressed (TODO: test)
+        if (header.getPackingMethod().equals(PackingMethod.COMPRESSED))
+            readFromPos += 4;
+        this.readAndWrite(readFromPos, this.length() - readFromPos);
+
+        this.writeChecksum();
+        this.setLength(this.length() - header.length() - header.getDataSize());
     }
 
     public void savePBO() throws IOException {
@@ -65,7 +93,7 @@ public class PBOAccessFile extends RandomAccessFile {
 
         for (PBOHeader header : pbo.getHeaders()) {
             long offset = pbo.getDataBlockOffset() + header.getDataOffset();
-            this.readAndWrite(offset, (int) header.getDataSize());
+            this.readAndWrite(offset, header.getDataSize());
         }
 
         this.writeChecksum();

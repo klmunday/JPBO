@@ -67,6 +67,23 @@ public class PBO {
         }
     }
 
+    public void deleteEntry(int index) throws NoSuchAlgorithmException, IOException {
+        PBOHeader header = this.headers.get(index);
+        this.deleteEntry(header);
+    }
+
+    public void deleteEntry(PBOHeader header) throws NoSuchAlgorithmException, IOException {
+        try (PBOAccessFile pboAccessFile = new PBOAccessFile(this)) {
+            pboAccessFile.deleteEntry(header);
+            int index = headers.indexOf(header);
+            for (PBOHeader h : this.headers.subList(index, this.headers.size())) {
+                h.setHeaderOffset(h.getHeaderOffset() - header.length());
+                h.setDataOffset(h.getDataOffset() - header.getDataSize() - header.length());
+            }
+            this.headers.remove(header);
+        }
+    }
+
     public static byte[] decompressEntry(byte[] data, PBOHeader entry) {
         long sizeIn = entry.getDataSize() > 0 ? entry.getDataSize() : 0x7fffffff;
         long sizeOut = entry.getOriginalSize();
