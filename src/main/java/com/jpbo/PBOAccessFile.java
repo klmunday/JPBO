@@ -77,7 +77,7 @@ public class PBOAccessFile extends RandomAccessFile {
         // skip data block checksum if header is compressed (TODO: test)
         if (header.getPackingMethod().equals(PackingMethod.COMPRESSED))
             readFromPos += 4;
-        this.readAndWrite(readFromPos, this.length() - readFromPos);
+        this.readAndWrite(readFromPos, this.length() - readFromPos - 21);
 
         this.writeChecksum();
         this.setLength(this.length() - header.length() - header.getDataSize());
