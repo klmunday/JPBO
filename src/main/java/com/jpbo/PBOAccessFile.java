@@ -66,7 +66,6 @@ public class PBOAccessFile extends RandomAccessFile {
         this.write(data);
     }
 
-    // TODO: incorrect checksum being calcualted, works fine when saved but needs to alter correctly here
     public void deleteEntry(PBOHeader header) throws IOException {
         this.seekAndUpdateChecksum(header.getHeaderOffset());
 
