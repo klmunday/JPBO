@@ -37,49 +37,34 @@ public class PBOAccessFile extends RandomAccessFile {
         this.checkSum.update(b);
     }
 
-    public void seekAndUpdateChecksum(long pos) throws IOException {
-        if (pos <= this.getPosition()) {
-            System.err.println("seekAndUpdateChecksum called with lower value than current position.");
-            this.seek(pos);
-        } else {
-            byte[] data = new byte[(int) (pos - this.getPosition())];
-            this.read(data);
-            this.checkSum.update(data);
-        }
-    }
-
     public long getPosition() throws IOException {
         return this.getChannel().position();
     }
 
-    public void writeChecksum() throws IOException {
-        super.write(0);
-        super.write(this.checkSum.digest());
-    }
-
-    public void readAndWrite(long readPos, long readLen) throws IOException {
-        byte[] data = new byte[(int) readLen];
-        long writePos = this.getPosition();
-        this.seek(readPos);
-        this.read(data);
-        this.seek(writePos);
-        this.write(data);
-    }
-
     public void deleteEntry(PBOHeader header) throws IOException {
         this.seekAndUpdateChecksum(header.getHeaderOffset());
-
         long readFromPos = this.getPosition() + header.length();
         this.readAndWrite(readFromPos, pbo.getDataBlockOffset() + header.getDataOffset() - readFromPos);
 
         readFromPos = this.getPosition() + header.getDataSize() + header.length();
-        // skip data block checksum if header is compressed (TODO: test)
-        if (header.getPackingMethod().equals(PackingMethod.COMPRESSED))
-            readFromPos += 4;
         this.readAndWrite(readFromPos, this.length() - readFromPos - 21);
 
         this.writeChecksum();
         this.setLength(this.length() - header.length() - header.getDataSize());
+    }
+
+    public void renameEntry(PBOHeader header, String newPath) throws IOException {
+        long sizeDiff = header.getPath().getBytes().length - newPath.getBytes().length;
+        if (sizeDiff == 0) {
+            this.seekAndUpdateChecksum(header.getHeaderOffset());
+            this.write(newPath.getBytes());
+            this.seekAndUpdateChecksum(this.length() - 21);
+            this.writeChecksum();
+        } else if (sizeDiff < 0) {
+
+        } else {
+
+        }
     }
 
     public void savePBO() throws IOException {
@@ -97,5 +82,30 @@ public class PBOAccessFile extends RandomAccessFile {
 
         this.writeChecksum();
         this.close();
+    }
+
+    private void seekAndUpdateChecksum(long pos) throws IOException {
+        if (pos <= this.getPosition()) {
+            System.err.println("seekAndUpdateChecksum called with lower value than current position.");
+            this.seek(pos);
+        } else {
+            byte[] data = new byte[(int) (pos - this.getPosition())];
+            this.read(data);
+            this.checkSum.update(data);
+        }
+    }
+
+    private void writeChecksum() throws IOException {
+        super.write(0);
+        super.write(this.checkSum.digest());
+    }
+
+    private void readAndWrite(long readPos, long readLen) throws IOException {
+        byte[] data = new byte[(int) readLen];
+        long writePos = this.getPosition();
+        this.seek(readPos);
+        this.read(data);
+        this.seek(writePos);
+        this.write(data);
     }
 }

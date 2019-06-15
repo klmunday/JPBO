@@ -72,15 +72,29 @@ public class PBO {
         this.deleteEntry(header);
     }
 
-    public void deleteEntry(PBOHeader header) throws NoSuchAlgorithmException, IOException {
+    public void deleteEntry(PBOHeader headerToRemove) throws NoSuchAlgorithmException, IOException {
         try (PBOAccessFile pboAccessFile = new PBOAccessFile(this)) {
-            pboAccessFile.deleteEntry(header);
-            int index = headers.indexOf(header);
-            for (PBOHeader h : this.headers.subList(index, this.headers.size())) {
-                h.setHeaderOffset(h.getHeaderOffset() - header.length());
-                h.setDataOffset(h.getDataOffset() - header.getDataSize() - header.length());
+            pboAccessFile.deleteEntry(headerToRemove);
+            int index = headers.indexOf(headerToRemove);
+            // update further entry data values to reflect new positions
+            this.dataBlockOffset -= headerToRemove.length();
+            for (PBOHeader header : this.headers.subList(index, this.headers.size())) {
+                header.setHeaderOffset(header.getHeaderOffset() - headerToRemove.length());
+                header.setDataOffset(header.getDataOffset() - headerToRemove.getDataSize());
             }
-            this.headers.remove(header);
+            this.headers.remove(headerToRemove);
+        }
+    }
+
+    public void renameEntry(int index, String newPath) throws NoSuchAlgorithmException, IOException {
+        PBOHeader header = this.headers.get(index);
+        this.renameEntry(header, newPath);
+    }
+
+    public void renameEntry(PBOHeader header, String newPath) throws NoSuchAlgorithmException, IOException {
+        try (PBOAccessFile pboAccessFile = new PBOAccessFile(this)) {
+            pboAccessFile.renameEntry(header, newPath);
+            this.headers.get(this.headers.indexOf(header)).setPath(newPath);
         }
     }
 
@@ -146,6 +160,11 @@ public class PBO {
         } else if (threadCount < 1) {
             System.err.println("Thread count needs to be greater than 0. Defaulting to 1");
             threadCount = 1;
+        }
+
+        if (threadCount == 1) {
+            this.unpack(outputDir);
+            return;
         }
 
         // Create copy of headers and sort them by size for load balancing between threads
