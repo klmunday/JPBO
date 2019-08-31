@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.io.File;
 
 public class PBOHeader implements Comparable<PBOHeader> {
 
@@ -29,7 +30,7 @@ public class PBOHeader implements Comparable<PBOHeader> {
     }
 
     public static PBOHeader read(PBOInputStream pboReader, long dataOffset, long headerOffset) throws IOException {
-        String headerName = pboReader.readString();
+        String headerName = pboReader.readString().replace("\\", File.separator);
         PackingMethod packingMethod = pboReader.readPackingMethod();
         long originalSize = pboReader.readIntLE();
         int reserved = pboReader.readIntLE();
@@ -63,7 +64,7 @@ public class PBOHeader implements Comparable<PBOHeader> {
 
     public byte[] toBytes() throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        outStream.write(this.path.getBytes());
+        outStream.write(this.path.replace(File.separator, "\\").getBytes());
         outStream.write(0);
 
         byte[] buffer = new byte[4];

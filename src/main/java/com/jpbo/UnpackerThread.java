@@ -35,7 +35,7 @@ public class UnpackerThread extends Thread {
                 if (header.getPackingMethod().equals(PackingMethod.COMPRESSED))
                     dataBuffer = PBO.decompressEntry(dataBuffer, header);
 
-                String filename = pboDirectory + File.separator + header.getPath().replace("\\", File.separator);
+                String filename = pboDirectory + File.separator + header.getPath();
                 File outFile = new File(filename);
                 outFile.getParentFile().mkdirs();
 
